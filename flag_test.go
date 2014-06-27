@@ -7,13 +7,14 @@ package pflag_test
 import (
 	"bytes"
 	"fmt"
+	"io/ioutil"
 	"os"
 	"sort"
 	"strings"
 	"testing"
 	"time"
 
-	. "github.com/ogier/pflag"
+	. "github.com/spf13/pflag"
 )
 
 var (
@@ -195,8 +196,9 @@ func TestShorthand(t *testing.T) {
 		"--",
 		notaflag,
 	}
-	if err := f.Parse(args); err != nil {
-		t.Fatal(err)
+	f.SetOutput(ioutil.Discard)
+	if err := f.Parse(args); err == nil {
+		t.Error("--i-look-like-a-flag should throw an error")
 	}
 	if !f.Parsed() {
 		t.Error("f.Parse() = false after Parse")
