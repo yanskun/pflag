@@ -149,6 +149,13 @@ type Flag struct {
 	Changed   bool   // If the user set the value (or if left to default)
 }
 
+// Value is the interface to the dynamic value stored in a flag.
+// (The default value is represented as a string.)
+type Value interface {
+	String() string
+	Set(string) error
+}
+
 // sortFlags returns the flags as a slice in lexicographical sorted order.
 func sortFlags(flags map[string]*Flag) []*Flag {
 	list := make(sort.StringSlice, len(flags))
