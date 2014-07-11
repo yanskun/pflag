@@ -154,6 +154,7 @@ type Flag struct {
 type Value interface {
 	String() string
 	Set(string) error
+	Type() string
 }
 
 // sortFlags returns the flags as a slice in lexicographical sorted order.

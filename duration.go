@@ -16,6 +16,10 @@ func (d *durationValue) Set(s string) error {
 	return err
 }
 
+func (d *durationValue) Type() string {
+	return "duration"
+}
+
 func (d *durationValue) String() string { return (*time.Duration)(d).String() }
 
 // DurationVar defines a time.Duration flag with specified name, default value, and usage string.
