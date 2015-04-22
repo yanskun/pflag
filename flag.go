@@ -141,12 +141,12 @@ type FlagSet struct {
 
 // A Flag represents the state of a flag.
 type Flag struct {
-	Name      string // name as it appears on command line
-	Shorthand string // one-letter abbreviated flag
-	Usage     string // help message
-	Value     Value  // value as set
-	DefValue  string // default value (as text); for usage message
-	Changed   bool   // If the user set the value (or if left to default)
+	Name        string              // name as it appears on command line
+	Shorthand   string              // one-letter abbreviated flag
+	Usage       string              // help message
+	Value       Value               // value as set
+	DefValue    string              // default value (as text); for usage message
+	Changed     bool                // If the user set the value (or if left to default)
 	Annotations map[string][]string // used by cobra.Command  bash autocomple code
 }
 
@@ -507,7 +507,8 @@ func (f *FlagSet) parseShortArg(s string, args []string) (a []string, err error)
 				continue
 			}
 			if i < len(shorthands)-1 {
-				if e := f.setFlag(flag, shorthands[i+1:], s); e != nil {
+				v := strings.TrimPrefix(shorthands[i+1:], "=")
+				if e := f.setFlag(flag, v, s); e != nil {
 					err = e
 					return
 				}
@@ -554,7 +555,7 @@ func (f *FlagSet) parseArgs(args []string) (err error) {
 			args, err = f.parseShortArg(s, args)
 		}
 		if err != nil {
-		   return
+			return
 		}
 	}
 	return
