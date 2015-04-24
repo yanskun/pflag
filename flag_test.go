@@ -238,8 +238,9 @@ func testNormalizedNames(args []string, t *testing.T) {
 	if f.Parsed() {
 		t.Error("f.Parse() = true before Parse")
 	}
-	f.SetWordSeparators([]string{"-", "_"})
 	withDashFlag := f.Bool("with-dash-flag", false, "bool value")
+	// Set this after some flags have been added and before others.
+	f.SetWordSeparators([]string{"-", "_"})
 	withUnderFlag := f.Bool("with_under_flag", false, "bool value")
 	withBothFlag := f.Bool("with-both_flag", false, "bool value")
 	if err := f.Parse(args); err != nil {
