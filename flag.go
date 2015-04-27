@@ -527,7 +527,8 @@ func (f *FlagSet) parseShortArg(s string, args []string) (a []string, err error)
 				continue
 			}
 			if i < len(shorthands)-1 {
-				if e := f.setFlag(flag, shorthands[i+1:], s); e != nil {
+				v := strings.TrimPrefix(shorthands[i+1:], "=")
+				if e := f.setFlag(flag, v, s); e != nil {
 					err = e
 					return
 				}
