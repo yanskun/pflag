@@ -379,7 +379,13 @@ func (f *FlagSet) Var(value Value, name string, usage string) {
 // Like Var, but accepts a shorthand letter that can be used after a single dash.
 func (f *FlagSet) VarP(value Value, name, shorthand, usage string) {
 	// Remember the default value as a string; it won't change.
-	flag := &Flag{name, shorthand, usage, value, value.String(), false, make(map[string][]string)}
+	flag := &Flag{
+		Name:      name,
+		Shorthand: shorthand,
+		Usage:     usage,
+		Value:     value,
+		DefValue:  value.String(),
+	}
 	f.AddFlag(flag)
 }
 
