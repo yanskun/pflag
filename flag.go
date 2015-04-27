@@ -621,9 +621,14 @@ func SetInterspersed(interspersed bool) {
 // SetWordSeparators sets a list of strings to be considerered as word
 // separators and normalized for the pruposes of lookups.  For example, if this
 // is set to {"-", "_", "."} then --foo_bar, --foo-bar, and --foo.bar are
-// considered equivalent flags.
+// considered equivalent flags.  This must be called before flags are parsed,
+// and may only be called once.
 func (f *FlagSet) SetWordSeparators(separators []string) {
 	f.wordSeparators = separators
+	for k, v := range f.formal {
+		delete(f.formal, k)
+		f.formal[f.normalizeFlagName(string(k))] = v
+	}
 }
 
 // Parsed returns true if the command-line flags have been parsed.
