@@ -239,14 +239,29 @@ func TestFlagSetParse(t *testing.T) {
 	testParse(NewFlagSet("test", ContinueOnError), t)
 }
 
-func testNormalizedNames(args []string, t *testing.T) {
+func replaceSeparators(name string, from []string, to string) string {
+	result := name
+	for _, sep := range from {
+		result = strings.Replace(result, sep, to, -1)
+	}
+	// Type convert to indicate normalization has been done.
+	return result
+}
+
+func wordSepNormalizeFunc(f *FlagSet, name string) NormalizedName {
+	seps := []string{"-", "_"}
+	name = replaceSeparators(name, seps, ".")
+	return NormalizedName(name)
+}
+
+func testWordSepNormalizedNames(args []string, t *testing.T) {
 	f := NewFlagSet("normalized", ContinueOnError)
 	if f.Parsed() {
 		t.Error("f.Parse() = true before Parse")
 	}
 	withDashFlag := f.Bool("with-dash-flag", false, "bool value")
 	// Set this after some flags have been added and before others.
-	f.SetWordSeparators([]string{"-", "_"})
+	f.SetNormalizeFunc(wordSepNormalizeFunc)
 	withUnderFlag := f.Bool("with_under_flag", false, "bool value")
 	withBothFlag := f.Bool("with-both_flag", false, "bool value")
 	if err := f.Parse(args); err != nil {
@@ -266,27 +281,66 @@ func testNormalizedNames(args []string, t *testing.T) {
 	}
 }
 
-func TestNormalizedNames(t *testing.T) {
+func TestWordSepNormalizedNames(t *testing.T) {
 	args := []string{
 		"--with-dash-flag",
 		"--with-under-flag",
 		"--with-both-flag",
 	}
-	testNormalizedNames(args, t)
+	testWordSepNormalizedNames(args, t)
 
 	args = []string{
 		"--with_dash_flag",
 		"--with_under_flag",
 		"--with_both_flag",
 	}
-	testNormalizedNames(args, t)
+	testWordSepNormalizedNames(args, t)
 
 	args = []string{
 		"--with-dash_flag",
 		"--with-under_flag",
 		"--with-both_flag",
 	}
-	testNormalizedNames(args, t)
+	testWordSepNormalizedNames(args, t)
+}
+
+func aliasAndWordSepFlagNames(f *FlagSet, name string) NormalizedName {
+	seps := []string{"-", "_"}
+
+	oldName := replaceSeparators("old-valid_flag", seps, ".")
+	newName := replaceSeparators("valid-flag", seps, ".")
+
+	name = replaceSeparators(name, seps, ".")
+	switch name {
+	case oldName:
+		name = newName
+		break
+	}
+
+	return NormalizedName(name)
+}
+
+func TestCustomNormalizedNames(t *testing.T) {
+	f := NewFlagSet("normalized", ContinueOnError)
+	if f.Parsed() {
+		t.Error("f.Parse() = true before Parse")
+	}
+
+	validFlag := f.Bool("valid-flag", false, "bool value")
+	f.SetNormalizeFunc(aliasAndWordSepFlagNames)
+	someOtherFlag := f.Bool("some-other-flag", false, "bool value")
+
+	args := []string{"--old_valid_flag", "--some-other_flag"}
+	if err := f.Parse(args); err != nil {
+		t.Fatal(err)
+	}
+
+	if *validFlag != true {
+		t.Errorf("validFlag is %v even though we set the alias --old_valid_falg", *validFlag)
+	}
+	if *someOtherFlag != true {
+		t.Error("someOtherFlag should be true, is ", *someOtherFlag)
+	}
 }
 
 // Declare a user-defined flag type.
@@ -503,7 +557,7 @@ func TestDeprecatedFlagUsage(t *testing.T) {
 func TestDeprecatedFlagUsageNormalized(t *testing.T) {
 	f := NewFlagSet("bob", ContinueOnError)
 	f.Bool("bad-double_flag", true, "always true")
-	f.SetWordSeparators([]string{"-", "_"})
+	f.SetNormalizeFunc(wordSepNormalizeFunc)
 	usageMsg := "use --good-flag instead"
 	f.MarkDeprecated("bad_double-flag", usageMsg)
 

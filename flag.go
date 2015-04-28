@@ -131,17 +131,17 @@ type FlagSet struct {
 	// a custom error handler.
 	Usage func()
 
-	name           string
-	parsed         bool
-	actual         map[NormalizedName]*Flag
-	formal         map[NormalizedName]*Flag
-	shorthands     map[byte]*Flag
-	args           []string // arguments after flags
-	exitOnError    bool     // does the program exit if there's an error?
-	errorHandling  ErrorHandling
-	output         io.Writer // nil means stderr; use out() accessor
-	interspersed   bool      // allow interspersed option/non-option args
-	wordSeparators []string
+	name              string
+	parsed            bool
+	actual            map[NormalizedName]*Flag
+	formal            map[NormalizedName]*Flag
+	shorthands        map[byte]*Flag
+	args              []string // arguments after flags
+	exitOnError       bool     // does the program exit if there's an error?
+	errorHandling     ErrorHandling
+	output            io.Writer // nil means stderr; use out() accessor
+	interspersed      bool      // allow interspersed option/non-option args
+	normalizeNameFunc func(f *FlagSet, name string) NormalizedName
 }
 
 // A Flag represents the state of a flag.
@@ -180,13 +180,24 @@ func sortFlags(flags map[NormalizedName]*Flag) []*Flag {
 	return result
 }
 
-func (f *FlagSet) normalizeFlagName(name string) NormalizedName {
-	result := name
-	for _, sep := range f.wordSeparators {
-		result = strings.Replace(result, sep, "-", -1)
+func (f *FlagSet) SetNormalizeFunc(n func(f *FlagSet, name string) NormalizedName) {
+	f.normalizeNameFunc = n
+	for k, v := range f.formal {
+		delete(f.formal, k)
+		f.formal[f.normalizeFlagName(string(k))] = v
 	}
-	// Type convert to indicate normalization has been done.
-	return NormalizedName(result)
+}
+
+func (f *FlagSet) GetNormalizeFunc() func(f *FlagSet, name string) NormalizedName {
+	if f.normalizeNameFunc != nil {
+		return f.normalizeNameFunc
+	}
+	return func(f *FlagSet, name string) NormalizedName { return NormalizedName(name) }
+}
+
+func (f *FlagSet) normalizeFlagName(name string) NormalizedName {
+	n := f.GetNormalizeFunc()
+	return n(f, name)
 }
 
 func (f *FlagSet) out() io.Writer {
@@ -646,19 +657,6 @@ func Parse() {
 // Whether to support interspersed option/non-option arguments.
 func SetInterspersed(interspersed bool) {
 	CommandLine.SetInterspersed(interspersed)
-}
-
-// SetWordSeparators sets a list of strings to be considerered as word
-// separators and normalized for the pruposes of lookups.  For example, if this
-// is set to {"-", "_", "."} then --foo_bar, --foo-bar, and --foo.bar are
-// considered equivalent flags.  This must be called before flags are parsed,
-// and may only be called once.
-func (f *FlagSet) SetWordSeparators(separators []string) {
-	f.wordSeparators = separators
-	for k, v := range f.formal {
-		delete(f.formal, k)
-		f.formal[f.normalizeFlagName(string(k))] = v
-	}
 }
 
 // Parsed returns true if the command-line flags have been parsed.
