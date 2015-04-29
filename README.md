@@ -143,6 +143,40 @@ Boolean flags (in their long form) accept 1, 0, t, f, true, false,
 TRUE, FALSE, True, False.
 Duration flags accept any input valid for time.ParseDuration.
 
+## Mutating or "Normalizing" Flag names
+
+It is possible to set a custom flag name 'normalization function.' It allows flag names to be mutated both when created in the code and when used on the command line to some 'normalized' form. The 'normalized' form is used for comparison. Two examples of using the custom normalization func follow.
+
+**Example #1**: You want -, _, and . in flags to compare the same. aka --my-flag == --my_flag == --my.flag
+
+```go
+func wordSepNormalizeFunc(f *pflag.FlagSet, name string) pflag.NormalizedName {
+	from := []string{"-", "_"}
+	to := "."
+	for _, sep := range from {
+		name = strings.Replace(name, sep, to, -1)
+	}
+	return pflag.NormalizedName(name)
+}
+
+myFlagSet.SetNormalizeFunc(wordSepNormalizeFunc)
+```
+
+**Example #2**: You want to alias two flags. aka --old-flag-name == --new-flag-name
+
+```go
+func aliasNormalizeFunc(f *pflag.FlagSet, name string) pflag.NormalizedName {
+	switch name {
+	case "old-flag-name":
+		name = "new-flag-name"
+		break
+	}
+	return pflag.NormalizedName(name)
+}
+
+myFlagSet.SetNormalizeFunc(aliasNormalizeFunc)
+```
+
 ## More info
 
 You can see the full reference documentation of the pflag package
