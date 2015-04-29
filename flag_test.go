@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
-package pflag_test
+package pflag
 
 import (
 	"bytes"
@@ -14,8 +14,6 @@ import (
 	"strings"
 	"testing"
 	"time"
-
-	. "github.com/spf13/pflag"
 )
 
 var (
