@@ -7,6 +7,7 @@ package pflag_test
 import (
 	"bytes"
 	"fmt"
+	"io"
 	"io/ioutil"
 	"os"
 	"sort"
@@ -443,5 +444,76 @@ func TestTermination(t *testing.T) {
 	}
 	if f.Args()[1] != arg2 {
 		t.Errorf("expected argument %q got %q", arg2, f.Args()[1])
+	}
+}
+
+func TestDeprecatedFlagInDocs(t *testing.T) {
+	f := NewFlagSet("bob", ContinueOnError)
+	f.Bool("badflag", true, "always true")
+	f.MarkDeprecated("badflag", "use --good-flag instead")
+
+	out := new(bytes.Buffer)
+	f.SetOutput(out)
+	f.PrintDefaults()
+
+	if strings.Contains(out.String(), "badflag") {
+		t.Errorf("found deprecated flag in usage!")
+	}
+}
+
+func parseReturnStderr(t *testing.T, f *FlagSet, args []string) (string, error) {
+	oldStderr := os.Stderr
+	r, w, _ := os.Pipe()
+	os.Stderr = w
+
+	err := f.Parse(args)
+
+	outC := make(chan string)
+	// copy the output in a separate goroutine so printing can't block indefinitely
+	go func() {
+		var buf bytes.Buffer
+		io.Copy(&buf, r)
+		outC <- buf.String()
+	}()
+
+	w.Close()
+	os.Stderr = oldStderr
+	out := <-outC
+
+	return out, err
+}
+
+func TestDeprecatedFlagUsage(t *testing.T) {
+	f := NewFlagSet("bob", ContinueOnError)
+	f.Bool("badflag", true, "always true")
+	usageMsg := "use --good-flag instead"
+	f.MarkDeprecated("badflag", usageMsg)
+
+	args := []string{"--badflag"}
+	out, err := parseReturnStderr(t, f, args)
+	if err != nil {
+		t.Fatal("expected no error; got ", err)
+	}
+
+	if !strings.Contains(out, usageMsg) {
+		t.Errorf("usageMsg not printed when using a deprecated flag!")
+	}
+}
+
+func TestDeprecatedFlagUsageNormalized(t *testing.T) {
+	f := NewFlagSet("bob", ContinueOnError)
+	f.Bool("bad-double_flag", true, "always true")
+	f.SetWordSeparators([]string{"-", "_"})
+	usageMsg := "use --good-flag instead"
+	f.MarkDeprecated("bad_double-flag", usageMsg)
+
+	args := []string{"--bad_double_flag"}
+	out, err := parseReturnStderr(t, f, args)
+	if err != nil {
+		t.Fatal("expected no error; got ", err)
+	}
+
+	if !strings.Contains(out, usageMsg) {
+		t.Errorf("usageMsg not printed when using a deprecated flag!")
 	}
 }

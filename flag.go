@@ -152,6 +152,7 @@ type Flag struct {
 	Value       Value               // value as set
 	DefValue    string              // default value (as text); for usage message
 	Changed     bool                // If the user set the value (or if left to default)
+	Deprecated  string              // If this flag is deprecated, this string is the new or now thing to use
 	Annotations map[string][]string // used by cobra.Command  bash autocomple code
 }
 
@@ -243,6 +244,16 @@ func (f *FlagSet) lookup(name normalizedName) *Flag {
 	return f.formal[name]
 }
 
+// Mark a flag deprecated in your program
+func (f *FlagSet) MarkDeprecated(name string, usageMessage string) error {
+	flag := f.Lookup(name)
+	if flag == nil {
+		return fmt.Errorf("flag %q does not exist", name)
+	}
+	flag.Deprecated = usageMessage
+	return nil
+}
+
 // Lookup returns the Flag structure of the named command-line flag,
 // returning nil if none exists.
 func Lookup(name string) *Flag {
@@ -264,7 +275,10 @@ func (f *FlagSet) Set(name, value string) error {
 		f.actual = make(map[normalizedName]*Flag)
 	}
 	f.actual[normalName] = flag
-	f.lookup(normalName).Changed = true
+	flag.Changed = true
+	if len(flag.Deprecated) > 0 {
+		fmt.Fprintf(os.Stderr, "Flag --%s has been deprecated, %s\n", flag.Name, flag.Deprecated)
+	}
 	return nil
 }
 
@@ -277,6 +291,9 @@ func Set(name, value string) error {
 // otherwise, the default values of all defined flags in the set.
 func (f *FlagSet) PrintDefaults() {
 	f.VisitAll(func(flag *Flag) {
+		if len(flag.Deprecated) > 0 {
+			return
+		}
 		format := "--%s=%s: %s\n"
 		if _, ok := flag.Value.(*stringValue); ok {
 			// put quotes on the value
@@ -295,6 +312,9 @@ func (f *FlagSet) FlagUsages() string {
 	x := new(bytes.Buffer)
 
 	f.VisitAll(func(flag *Flag) {
+		if len(flag.Deprecated) > 0 {
+			return
+		}
 		format := "--%s=%s: %s\n"
 		if _, ok := flag.Value.(*stringValue); ok {
 			// put quotes on the value
@@ -466,6 +486,9 @@ func (f *FlagSet) setFlag(flag *Flag, value string, origArg string) error {
 	}
 	f.actual[f.normalizeFlagName(flag.Name)] = flag
 	flag.Changed = true
+	if len(flag.Deprecated) > 0 {
+		fmt.Fprintf(os.Stderr, "Flag --%s has been deprecated, %s\n", flag.Name, flag.Deprecated)
+	}
 	return nil
 }
 
