@@ -1,3 +1,5 @@
+[![Build Status](https://travis-ci.org/spf13/pflag.svg?branch=master)](https://travis-ci.org/spf13/pflag)
+
 ## Description
 
 pflag is a drop-in replacement for Go's flag package, implementing
