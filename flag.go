@@ -505,10 +505,6 @@ func (f *FlagSet) setFlag(flag *Flag, value string, origArg string) error {
 
 func (f *FlagSet) parseLongArg(s string, args []string) (a []string, err error) {
 	a = args
-	if len(s) == 2 { // "--" terminates the flags
-		f.args = append(f.args, args...)
-		return
-	}
 	name := s[2:]
 	if len(name) == 0 || name[0] == '-' || name[0] == '=' {
 		err = f.failf("bad flag syntax: %s", s)
@@ -521,24 +517,23 @@ func (f *FlagSet) parseLongArg(s string, args []string) (a []string, err error) 
 	if !alreadythere {
 		if name == "help" { // special case for nice help message.
 			f.usage()
-			return args, ErrHelp
+			return a, ErrHelp
 		}
 		err = f.failf("unknown flag: --%s", name)
 		return
 	}
+	var value string
 	if len(split) == 1 {
 		if bv, ok := flag.Value.(boolFlag); !ok || !bv.IsBoolFlag() {
 			err = f.failf("flag needs an argument: %s", s)
 			return
 		}
-		f.setFlag(flag, "true", s)
+		value = "true"
 	} else {
-		if e := f.setFlag(flag, split[1], s); e != nil {
-			err = e
-			return
-		}
+		value = split[1]
 	}
-	return args, nil
+	err = f.setFlag(flag, value, s)
+	return
 }
 
 func (f *FlagSet) parseShortArg(s string, args []string) (a []string, err error) {
@@ -605,12 +600,11 @@ func (f *FlagSet) parseArgs(args []string) (err error) {
 		}
 
 		if s[1] == '-' {
-			args, err = f.parseLongArg(s, args)
-
-			if len(s) == 2 {
-				// stop parsing after --
+			if len(s) == 2 { // "--" terminates the flags
+				f.args = append(f.args, args...)
 				break
 			}
+			args, err = f.parseLongArg(s, args)
 		} else {
 			args, err = f.parseShortArg(s, args)
 		}
