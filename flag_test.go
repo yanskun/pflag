@@ -184,6 +184,7 @@ func TestShorthand(t *testing.T) {
 	boolaFlag := f.BoolP("boola", "a", false, "bool value")
 	boolbFlag := f.BoolP("boolb", "b", false, "bool2 value")
 	boolcFlag := f.BoolP("boolc", "c", false, "bool3 value")
+	booldFlag := f.BoolP("boold", "d", false, "bool4 value")
 	stringaFlag := f.StringP("stringa", "s", "0", "string value")
 	stringzFlag := f.StringP("stringz", "z", "0", "string value")
 	extra := "interspersed-argument"
@@ -194,6 +195,7 @@ func TestShorthand(t *testing.T) {
 		"-cs",
 		"hello",
 		"-z=something",
+		"-d=true",
 		"--",
 		notaflag,
 	}
@@ -212,6 +214,9 @@ func TestShorthand(t *testing.T) {
 	}
 	if *boolcFlag != true {
 		t.Error("boolc flag should be true, is ", *boolcFlag)
+	}
+	if *booldFlag != true {
+		t.Error("boold flag should be true, is ", *booldFlag)
 	}
 	if *stringaFlag != "hello" {
 		t.Error("stringa flag should be `hello`, is ", *stringaFlag)
