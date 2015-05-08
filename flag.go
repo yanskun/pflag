@@ -553,10 +553,13 @@ func (f *FlagSet) parseSingleShortArg(shorthands string, args []string) (outShor
 		return
 	}
 	var value string
-	if bv, ok := flag.Value.(boolFlag); ok && bv.IsBoolFlag() {
+	if len(shorthands) > 2 && shorthands[1] == '=' {
+		value = shorthands[2:]
+		outShorts = ""
+	} else if bv, ok := flag.Value.(boolFlag); ok && bv.IsBoolFlag() {
 		value = "true"
 	} else if len(shorthands) > 1 {
-		value = strings.TrimPrefix(shorthands[1:], "=")
+		value = shorthands[1:]
 		outShorts = ""
 	} else if len(args) > 0 {
 		value = args[0]
