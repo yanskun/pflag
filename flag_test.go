@@ -27,6 +27,7 @@ var (
 	test_string                  = String("test_string", "0", "string value")
 	test_float64                 = Float64("test_float64", 0, "float64 value")
 	test_duration                = Duration("test_duration", 0, "time.Duration value")
+	test_optional_int            = Int("test_optional_int", 0, "optional int value")
 	normalizeFlagNameInvocations = 0
 )
 
@@ -58,7 +59,7 @@ func TestEverything(t *testing.T) {
 		}
 	}
 	VisitAll(visitor)
-	if len(m) != 8 {
+	if len(m) != 9 {
 		t.Error("VisitAll misses some flags")
 		for k, v := range m {
 			t.Log(k, *v)
@@ -81,9 +82,10 @@ func TestEverything(t *testing.T) {
 	Set("test_string", "1")
 	Set("test_float64", "1")
 	Set("test_duration", "1s")
+	Set("test_optional_int", "1")
 	desired = "1"
 	Visit(visitor)
-	if len(m) != 8 {
+	if len(m) != 9 {
 		t.Error("Visit fails after set")
 		for k, v := range m {
 			t.Log(k, *v)
@@ -161,6 +163,10 @@ func testParse(f *FlagSet, t *testing.T) {
 	ipFlag := f.IP("ip", net.ParseIP("127.0.0.1"), "ip value")
 	maskFlag := f.IPMask("mask", ParseIPv4Mask("0.0.0.0"), "mask value")
 	durationFlag := f.Duration("duration", 5*time.Second, "time.Duration value")
+	optionalIntNoValueFlag := f.Int("optional-int-no-value", 0, "int value")
+	f.Lookup("optional-int-no-value").NoOptDefVal = "9"
+	optionalIntWithValueFlag := f.Int("optional-int-with-value", 0, "int value")
+	f.Lookup("optional-int-no-value").NoOptDefVal = "9"
 	extra := "one-extra-argument"
 	args := []string{
 		"--bool",
@@ -181,6 +187,8 @@ func testParse(f *FlagSet, t *testing.T) {
 		"--ip=10.11.12.13",
 		"--mask=255.255.255.0",
 		"--duration=2m",
+		"--optional-int-no-value",
+		"--optional-int-with-value=42",
 		extra,
 	}
 	if err := f.Parse(args); err != nil {
@@ -293,6 +301,12 @@ func testParse(f *FlagSet, t *testing.T) {
 	}
 	if _, err := f.GetInt("duration"); err == nil {
 		t.Error("GetInt parsed a time.Duration?!?!")
+	}
+	if *optionalIntNoValueFlag != 9 {
+		t.Error("optional int flag should be the default value, is ", *optionalIntNoValueFlag)
+	}
+	if *optionalIntWithValueFlag != 42 {
+		t.Error("optional int flag should be 42, is ", *optionalIntWithValueFlag)
 	}
 	if len(f.Args()) != 1 {
 		t.Error("expected one argument, got", len(f.Args()))

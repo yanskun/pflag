@@ -152,6 +152,7 @@ type Flag struct {
 	Value       Value               // value as set
 	DefValue    string              // default value (as text); for usage message
 	Changed     bool                // If the user set the value (or if left to default)
+	NoOptDefVal string              //default value (as text); if the flag is on the command line without any options
 	Deprecated  string              // If this flag is deprecated, this string is the new or now thing to use
 	Annotations map[string][]string // used by cobra.Command  bash autocomple code
 }
@@ -341,16 +342,25 @@ func (f *FlagSet) PrintDefaults() {
 		if len(flag.Deprecated) > 0 {
 			return
 		}
-		format := "--%s=%s: %s\n"
-		if _, ok := flag.Value.(*stringValue); ok {
-			// put quotes on the value
-			format = "--%s=%q: %s\n"
-		}
+		format := ""
+		// ex: w/ option string argument '-%s, --%s[=%q]: %s\n'
 		if len(flag.Shorthand) > 0 {
-			format = "  -%s, " + format
+			format = "  -%s, --%s"
 		} else {
-			format = "   %s   " + format
+			format = "   %s   --%s"
 		}
+		if len(flag.NoOptDefVal) > 0 {
+			format = format + "["
+		}
+		if _, ok := flag.Value.(*stringValue); ok {
+			format = format + "=%q"
+		} else {
+			format = format + "=%s"
+		}
+		if len(flag.NoOptDefVal) > 0 {
+			format = format + "]"
+		}
+		format = format + ": %s\n"
 		fmt.Fprintf(f.out(), format, flag.Shorthand, flag.Name, flag.DefValue, flag.Usage)
 	})
 }
@@ -443,8 +453,8 @@ func (f *FlagSet) Var(value Value, name string, usage string) {
 	f.VarP(value, name, "", usage)
 }
 
-// Like Var, but accepts a shorthand letter that can be used after a single dash.
-func (f *FlagSet) VarP(value Value, name, shorthand, usage string) {
+// Like VarP, but returns the flag created
+func (f *FlagSet) VarPF(value Value, name, shorthand, usage string) *Flag {
 	// Remember the default value as a string; it won't change.
 	flag := &Flag{
 		Name:      name,
@@ -454,6 +464,12 @@ func (f *FlagSet) VarP(value Value, name, shorthand, usage string) {
 		DefValue:  value.String(),
 	}
 	f.AddFlag(flag)
+	return flag
+}
+
+// Like Var, but accepts a shorthand letter that can be used after a single dash.
+func (f *FlagSet) VarP(value Value, name, shorthand, usage string) {
+	_ = f.VarPF(value, name, shorthand, usage)
 }
 
 func (f *FlagSet) AddFlag(flag *Flag) {
@@ -566,11 +582,11 @@ func (f *FlagSet) parseLongArg(s string, args []string) (a []string, err error) 
 	if len(split) == 2 {
 		// '--flag=arg'
 		value = split[1]
-	} else if bv, ok := flag.Value.(boolFlag); ok && bv.IsBoolFlag() {
-		// '--flag' (where flag is a bool)
-		value = "true"
+	} else if len(flag.NoOptDefVal) > 0 {
+		// '--flag' (arg was optional)
+		value = flag.NoOptDefVal
 	} else {
-		// '--flag' (where flag was not a bool)
+		// '--flag' (arg was required)
 		err = f.failf("flag needs an argument: %s", s)
 		return
 	}
@@ -598,8 +614,8 @@ func (f *FlagSet) parseSingleShortArg(shorthands string, args []string) (outShor
 	if len(shorthands) > 2 && shorthands[1] == '=' {
 		value = shorthands[2:]
 		outShorts = ""
-	} else if bv, ok := flag.Value.(boolFlag); ok && bv.IsBoolFlag() {
-		value = "true"
+	} else if len(flag.NoOptDefVal) > 0 {
+		value = flag.NoOptDefVal
 	} else if len(shorthands) > 1 {
 		value = shorthands[1:]
 		outShorts = ""
