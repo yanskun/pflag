@@ -536,50 +536,48 @@ func (f *FlagSet) parseLongArg(s string, args []string) (a []string, err error) 
 	return
 }
 
+func (f *FlagSet) parseSingleShortArg(shorthands string, args []string) (outShorts string, outArgs []string, err error) {
+	outArgs = args
+	outShorts = shorthands[1:]
+	c := shorthands[0]
+
+	flag, alreadythere := f.shorthands[c]
+	if !alreadythere {
+		if c == 'h' { // special case for nice help message.
+			f.usage()
+			err = ErrHelp
+			return
+		}
+		//TODO continue on error
+		err = f.failf("unknown shorthand flag: %q in -%s", c, shorthands)
+		return
+	}
+	var value string
+	if bv, ok := flag.Value.(boolFlag); ok && bv.IsBoolFlag() {
+		value = "true"
+	} else if len(shorthands) > 1 {
+		value = strings.TrimPrefix(shorthands[1:], "=")
+		outShorts = ""
+	} else if len(args) > 0 {
+		value = args[0]
+		outArgs = args[1:]
+	} else {
+		err = f.failf("flag needs an argument: %q in -%s", c, shorthands)
+		return
+	}
+	err = f.setFlag(flag, value, shorthands)
+	return
+}
+
 func (f *FlagSet) parseShortArg(s string, args []string) (a []string, err error) {
 	a = args
 	shorthands := s[1:]
 
-	for i := 0; i < len(shorthands); i++ {
-		c := shorthands[i]
-		flag, alreadythere := f.shorthands[c]
-		if !alreadythere {
-			if c == 'h' { // special case for nice help message.
-				f.usage()
-				err = ErrHelp
-				return
-			}
-			//TODO continue on error
-			err = f.failf("unknown shorthand flag: %q in -%s", c, shorthands)
-			if len(args) == 0 {
-				return
-			}
+	for len(shorthands) > 0 {
+		shorthands, a, err = f.parseSingleShortArg(shorthands, args)
+		if err != nil {
 			return
 		}
-		if alreadythere {
-			if bv, ok := flag.Value.(boolFlag); ok && bv.IsBoolFlag() {
-				f.setFlag(flag, "true", s)
-				continue
-			}
-			if i < len(shorthands)-1 {
-				v := strings.TrimPrefix(shorthands[i+1:], "=")
-				if e := f.setFlag(flag, v, s); e != nil {
-					err = e
-					return
-				}
-				break
-			}
-			if len(args) == 0 {
-				err = f.failf("flag needs an argument: %q in -%s", c, shorthands)
-				return
-			}
-			if e := f.setFlag(flag, args[0], s); e != nil {
-				err = e
-				return
-			}
-		}
-		a = args[1:]
-		break // should be unnecessary
 	}
 
 	return
