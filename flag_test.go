@@ -17,14 +17,15 @@ import (
 )
 
 var (
-	test_bool     = Bool("test_bool", false, "bool value")
-	test_int      = Int("test_int", 0, "int value")
-	test_int64    = Int64("test_int64", 0, "int64 value")
-	test_uint     = Uint("test_uint", 0, "uint value")
-	test_uint64   = Uint64("test_uint64", 0, "uint64 value")
-	test_string   = String("test_string", "0", "string value")
-	test_float64  = Float64("test_float64", 0, "float64 value")
-	test_duration = Duration("test_duration", 0, "time.Duration value")
+	test_bool                    = Bool("test_bool", false, "bool value")
+	test_int                     = Int("test_int", 0, "int value")
+	test_int64                   = Int64("test_int64", 0, "int64 value")
+	test_uint                    = Uint("test_uint", 0, "uint value")
+	test_uint64                  = Uint64("test_uint64", 0, "uint64 value")
+	test_string                  = String("test_string", "0", "string value")
+	test_float64                 = Float64("test_float64", 0, "float64 value")
+	test_duration                = Duration("test_duration", 0, "time.Duration value")
+	normalizeFlagNameInvocations = 0
 )
 
 func boolString(s string) string {
@@ -254,6 +255,8 @@ func replaceSeparators(name string, from []string, to string) string {
 func wordSepNormalizeFunc(f *FlagSet, name string) NormalizedName {
 	seps := []string{"-", "_"}
 	name = replaceSeparators(name, seps, ".")
+	normalizeFlagNameInvocations++
+
 	return NormalizedName(name)
 }
 
@@ -572,5 +575,18 @@ func TestDeprecatedFlagUsageNormalized(t *testing.T) {
 
 	if !strings.Contains(out, usageMsg) {
 		t.Errorf("usageMsg not printed when using a deprecated flag!")
+	}
+}
+
+// Name normalization function should be called only once on flag addition
+func TestMultipleNormalizeFlagNameInvocations(t *testing.T) {
+	normalizeFlagNameInvocations = 0
+
+	f := NewFlagSet("normalized", ContinueOnError)
+	f.SetNormalizeFunc(wordSepNormalizeFunc)
+	f.Bool("with_under_flag", false, "bool value")
+
+	if normalizeFlagNameInvocations != 1 {
+		t.Fatal("Expected normalizeFlagNameInvocations to be 1; got ", normalizeFlagNameInvocations)
 	}
 }
