@@ -421,7 +421,10 @@ func (f *FlagSet) VarP(value Value, name, shorthand, usage string) {
 }
 
 func (f *FlagSet) AddFlag(flag *Flag) {
-	_, alreadythere := f.formal[f.normalizeFlagName(flag.Name)]
+	// Call normalizeFlagName function only once
+	var normalizedFlagName NormalizedName = f.normalizeFlagName(flag.Name)
+
+	_, alreadythere := f.formal[normalizedFlagName]
 	if alreadythere {
 		msg := fmt.Sprintf("%s flag redefined: %s", f.name, flag.Name)
 		fmt.Fprintln(f.out(), msg)
@@ -430,7 +433,7 @@ func (f *FlagSet) AddFlag(flag *Flag) {
 	if f.formal == nil {
 		f.formal = make(map[NormalizedName]*Flag)
 	}
-	f.formal[f.normalizeFlagName(flag.Name)] = flag
+	f.formal[normalizedFlagName] = flag
 
 	if len(flag.Shorthand) == 0 {
 		return
