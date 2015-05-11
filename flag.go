@@ -184,7 +184,9 @@ func (f *FlagSet) SetNormalizeFunc(n func(f *FlagSet, name string) NormalizedNam
 	f.normalizeNameFunc = n
 	for k, v := range f.formal {
 		delete(f.formal, k)
-		f.formal[f.normalizeFlagName(string(k))] = v
+		nname := f.normalizeFlagName(string(k))
+		f.formal[nname] = v
+		v.Name = string(nname)
 	}
 }
 
@@ -433,6 +435,8 @@ func (f *FlagSet) AddFlag(flag *Flag) {
 	if f.formal == nil {
 		f.formal = make(map[NormalizedName]*Flag)
 	}
+
+	flag.Name = string(normalizedFlagName)
 	f.formal[normalizedFlagName] = flag
 
 	if len(flag.Shorthand) == 0 {
