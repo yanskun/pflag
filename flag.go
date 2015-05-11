@@ -519,8 +519,7 @@ func (f *FlagSet) parseLongArg(s string, args []string) (a []string, err error) 
 	}
 	split := strings.SplitN(name, "=", 2)
 	name = split[0]
-	m := f.formal
-	flag, alreadythere := m[f.normalizeFlagName(name)] // BUG
+	flag, alreadythere := f.formal[f.normalizeFlagName(name)]
 	if !alreadythere {
 		if name == "help" { // special case for nice help message.
 			f.usage()
