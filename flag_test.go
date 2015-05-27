@@ -176,7 +176,7 @@ func testParse(f *FlagSet, t *testing.T) {
 		"--int8=-8",
 		"--int32=-32",
 		"--int64=0x23",
-		"--uint=24",
+		"--uint", "24",
 		"--uint8=8",
 		"--uint16=16",
 		"--uint32=32",

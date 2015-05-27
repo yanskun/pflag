@@ -585,6 +585,10 @@ func (f *FlagSet) parseLongArg(s string, args []string) (a []string, err error) 
 	} else if len(flag.NoOptDefVal) > 0 {
 		// '--flag' (arg was optional)
 		value = flag.NoOptDefVal
+	} else if len(a) > 0 {
+		// '--flag arg'
+		value = a[0]
+		a = a[1:]
 	} else {
 		// '--flag' (arg was required)
 		err = f.failf("flag needs an argument: %s", s)
