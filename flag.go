@@ -529,14 +529,16 @@ func (f *FlagSet) parseLongArg(s string, args []string) (a []string, err error) 
 		return
 	}
 	var value string
-	if len(split) == 1 {
-		if bv, ok := flag.Value.(boolFlag); !ok || !bv.IsBoolFlag() {
-			err = f.failf("flag needs an argument: %s", s)
-			return
-		}
+	if len(split) == 2 {
+		// '--flag=arg'
+		value = split[1]
+	} else if bv, ok := flag.Value.(boolFlag); ok && bv.IsBoolFlag() {
+		// '--flag' (where flag is a bool)
 		value = "true"
 	} else {
-		value = split[1]
+		// '--flag' (where flag was not a bool)
+		err = f.failf("flag needs an argument: %s", s)
+		return
 	}
 	err = f.setFlag(flag, value, s)
 	return
