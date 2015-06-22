@@ -36,4 +36,14 @@ func TestIS(t *testing.T) {
 			t.Fatalf("expected is[%d] to be %s but got: %d", i, vals[i], v)
 		}
 	}
+	getIS, err := f.GetIntSlice("is")
+	for i, v := range getIS {
+		d, err := strconv.Atoi(vals[i])
+		if err != nil {
+			t.Fatalf("got error: %v", err)
+		}
+		if d != v {
+			t.Fatalf("expected is[%d] to be %s but got: %d from GetIntSlice", i, vals[i], v)
+		}
+	}
 }

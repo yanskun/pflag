@@ -31,4 +31,14 @@ func TestSS(t *testing.T) {
 			t.Fatal("expected ss[%d] to be %s but got: %s", i, vals[i], v)
 		}
 	}
+
+	getSS, err := f.GetStringSlice("ss")
+	if err != nil {
+		t.Fatal("got an error from GetStringSlice(): %v", err)
+	}
+	for i, v := range getSS {
+		if vals[i] != v {
+			t.Fatal("expected ss[%d] to be %s from GetStringSlice but got: %s", i, vals[i], v)
+		}
+	}
 }
