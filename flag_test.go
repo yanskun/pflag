@@ -11,6 +11,7 @@ import (
 	"io/ioutil"
 	"net"
 	"os"
+	"reflect"
 	"sort"
 	"strings"
 	"testing"
@@ -104,6 +105,37 @@ func TestUsage(t *testing.T) {
 	}
 	if !called {
 		t.Error("did not call Usage for unknown flag")
+	}
+}
+
+func TestAnnotation(t *testing.T) {
+	f := NewFlagSet("shorthand", ContinueOnError)
+
+	if err := f.SetAnnotation("missing-flag", "key", nil); err == nil {
+		t.Errorf("Expected error setting annotation on non-existent flag")
+	}
+
+	f.StringP("stringa", "a", "", "string value")
+	if err := f.SetAnnotation("stringa", "key", nil); err != nil {
+		t.Errorf("Unexpected error setting new nil annotation: %v", err)
+	}
+	if annotation := f.Lookup("stringa").Annotations["key"]; annotation != nil {
+		t.Errorf("Unexpected annotation: %v", annotation)
+	}
+
+	f.StringP("stringb", "b", "", "string2 value")
+	if err := f.SetAnnotation("stringb", "key", []string{"value1"}); err != nil {
+		t.Errorf("Unexpected error setting new annotation: %v", err)
+	}
+	if annotation := f.Lookup("stringb").Annotations["key"]; !reflect.DeepEqual(annotation, []string{"value1"}) {
+		t.Errorf("Unexpected annotation: %v", annotation)
+	}
+
+	if err := f.SetAnnotation("stringb", "key", []string{"value2"}); err != nil {
+		t.Errorf("Unexpected error updating annotation: %v", err)
+	}
+	if annotation := f.Lookup("stringb").Annotations["key"]; !reflect.DeepEqual(annotation, []string{"value2"}) {
+		t.Errorf("Unexpected annotation: %v", annotation)
 	}
 }
 
