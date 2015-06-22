@@ -295,6 +295,19 @@ func (f *FlagSet) Set(name, value string) error {
 	return nil
 }
 
+func (f *FlagSet) SetAnnotation(name, key string, values []string) error {
+	normalName := f.normalizeFlagName(name)
+	flag, ok := f.formal[normalName]
+	if !ok {
+		return fmt.Errorf("no such flag -%v", name)
+	}
+	if flag.Annotations == nil {
+		flag.Annotations = map[string][]string{}
+	}
+	flag.Annotations[key] = values
+	return nil
+}
+
 // Set sets the value of the named command-line flag.
 func Set(name, value string) error {
 	return CommandLine.Set(name, value)
