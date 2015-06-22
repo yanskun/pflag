@@ -257,6 +257,27 @@ func (f *FlagSet) lookup(name NormalizedName) *Flag {
 	return f.formal[name]
 }
 
+// func to return a given type for a given flag name
+func (f *FlagSet) getFlagType(name string, ftype string, convFunc func(sval string) (interface{}, error)) (interface{}, error) {
+	flag := f.Lookup(name)
+	if flag == nil {
+		err := fmt.Errorf("flag accessed but not defined: %s\n", name)
+		return nil, err
+	}
+
+	if flag.Value.Type() != ftype {
+		err := fmt.Errorf("trying to get %s value of flag of type %s\n", ftype, flag.Value.Type())
+		return nil, err
+	}
+
+	sval := flag.Value.String()
+	result, err := convFunc(sval)
+	if err != nil {
+		return nil, err
+	}
+	return result, nil
+}
+
 // Mark a flag deprecated in your program
 func (f *FlagSet) MarkDeprecated(name string, usageMessage string) error {
 	flag := f.Lookup(name)

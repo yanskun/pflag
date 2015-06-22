@@ -34,6 +34,19 @@ func (b *boolValue) String() string { return fmt.Sprintf("%v", *b) }
 
 func (b *boolValue) IsBoolFlag() bool { return true }
 
+func boolConv(sval string) (interface{}, error) {
+	return strconv.ParseBool(sval)
+}
+
+// GetBool return the bool value of a flag with the given name
+func (f *FlagSet) GetBool(name string) (bool, error) {
+	val, err := f.getFlagType(name, "bool", boolConv)
+	if err != nil {
+		return false, err
+	}
+	return val.(bool), nil
+}
+
 // BoolVar defines a bool flag with specified name, default value, and usage string.
 // The argument p points to a bool variable in which to store the value of the flag.
 func (f *FlagSet) BoolVar(p *bool, name string, value bool, usage string) {
