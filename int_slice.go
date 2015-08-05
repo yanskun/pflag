@@ -43,6 +43,10 @@ func (s *intSliceValue) String() string {
 
 func intSliceConv(val string) (interface{}, error) {
 	val = strings.Trim(val, "[]")
+	// Empty string would cause a slice with one (empty) entry
+	if len(val) == 0 {
+		return []int{}, nil
+	}
 	ss := strings.Split(val, ",")
 	out := make([]int, len(ss))
 	for i, d := range ss {

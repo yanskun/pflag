@@ -25,6 +25,10 @@ func (s *stringSliceValue) String() string { return "[" + strings.Join(*s, ",") 
 
 func stringSliceConv(sval string) (interface{}, error) {
 	sval = strings.Trim(sval, "[]")
+	// An empty string would cause a slice with one (empty) string
+	if len(sval) == 0 {
+		return []string{}, nil
+	}
 	v := strings.Split(sval, ",")
 	return v, nil
 }

@@ -17,6 +17,23 @@ func setUpISFlagSet(isp *[]int) *FlagSet {
 	return f
 }
 
+func TestEmptyIS(t *testing.T) {
+	var is []int
+	f := setUpISFlagSet(&is)
+	err := f.Parse([]string{})
+	if err != nil {
+		t.Fatal("expected no error; got", err)
+	}
+
+	getIS, err := f.GetIntSlice("is")
+	if err != nil {
+		t.Fatal("got an error from GetStringSlice():", err)
+	}
+	if len(getIS) != 0 {
+		t.Fatalf("got is %v with len=%d but expected length=0", getIS, len(getIS))
+	}
+}
+
 func TestIS(t *testing.T) {
 	var is []int
 	f := setUpISFlagSet(&is)
