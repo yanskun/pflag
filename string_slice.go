@@ -14,7 +14,7 @@ func newStringSliceValue(val []string, p *[]string) *stringSliceValue {
 
 func (s *stringSliceValue) Set(val string) error {
 	v := strings.Split(val, ",")
-	*s = stringSliceValue(v)
+	*s = append(*s, v...)
 	return nil
 }
 func (s *stringSliceValue) Type() string {

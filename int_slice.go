@@ -25,7 +25,7 @@ func (s *intSliceValue) Set(val string) error {
 		}
 
 	}
-	*s = intSliceValue(out)
+	*s = append(*s, out...)
 	return nil
 }
 
@@ -38,10 +38,11 @@ func (s *intSliceValue) String() string {
 	for i, d := range *s {
 		out[i] = fmt.Sprintf("%d", d)
 	}
-	return strings.Join(out, ",")
+	return "[" + strings.Join(out, ",") + "]"
 }
 
 func intSliceConv(val string) (interface{}, error) {
+	val = strings.Trim(val, "[]")
 	ss := strings.Split(val, ",")
 	out := make([]int, len(ss))
 	for i, d := range ss {
