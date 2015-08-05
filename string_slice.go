@@ -21,9 +21,10 @@ func (s *stringSliceValue) Type() string {
 	return "stringSlice"
 }
 
-func (s *stringSliceValue) String() string { return strings.Join(*s, ",") }
+func (s *stringSliceValue) String() string { return "[" + strings.Join(*s, ",") + "]" }
 
 func stringSliceConv(sval string) (interface{}, error) {
+	sval = strings.Trim(sval, "[]")
 	v := strings.Split(sval, ",")
 	return v, nil
 }
