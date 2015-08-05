@@ -47,3 +47,23 @@ func TestIS(t *testing.T) {
 		}
 	}
 }
+
+func TestISCalledTwice(t *testing.T) {
+	var is []int
+	f := setUpISFlagSet(&is)
+
+	in := []string{"1,2", "3"}
+	expected := []int{1, 2, 3}
+	argfmt := "--is=%s"
+	arg1 := fmt.Sprintf(argfmt, in[0])
+	arg2 := fmt.Sprintf(argfmt, in[1])
+	err := f.Parse([]string{arg1, arg2})
+	if err != nil {
+		t.Fatal("expected no error; got", err)
+	}
+	for i, v := range is {
+		if expected[i] != v {
+			t.Fatalf("expected ss[%d] to be %s but got: %s", i, expected[i], v)
+		}
+	}
+}
