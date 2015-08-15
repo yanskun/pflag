@@ -387,7 +387,7 @@ func (f *FlagSet) FlagUsages() string {
 		if len(flag.NoOptDefVal) > 0 {
 			format = format + "["
 		}
-		if _, ok := flag.Value.(*stringValue); ok {
+		if flag.Value.Type() == "string" {
 			// put quotes on the value
 			format = format + "=%q"
 		} else {
