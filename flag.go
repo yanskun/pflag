@@ -381,16 +381,25 @@ func (f *FlagSet) FlagUsages() string {
 		if len(flag.Deprecated) > 0 {
 			return
 		}
-		format := "--%s=%s: %s\n"
+		format := ""
+		if len(flag.Shorthand) > 0 {
+			format = "  -%s, --%s"
+		} else {
+			format = "   %s   --%s"
+		}
+		if len(flag.NoOptDefVal) > 0 {
+			format = format + "["
+		}
 		if _, ok := flag.Value.(*stringValue); ok {
 			// put quotes on the value
-			format = "--%s=%q: %s\n"
-		}
-		if len(flag.Shorthand) > 0 {
-			format = "  -%s, " + format
+			format = format + "=%q"
 		} else {
-			format = "   %s   " + format
+			format = format + "=%s"
 		}
+		if len(flag.NoOptDefVal) > 0 {
+			format = format + "]"
+		}
+		format = format + ": %s\n"
 		fmt.Fprintf(x, format, flag.Shorthand, flag.Name, flag.DefValue, flag.Usage)
 	})
 
