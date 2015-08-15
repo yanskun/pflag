@@ -347,31 +347,8 @@ func Set(name, value string) error {
 // PrintDefaults prints, to standard error unless configured
 // otherwise, the default values of all defined flags in the set.
 func (f *FlagSet) PrintDefaults() {
-	f.VisitAll(func(flag *Flag) {
-		if len(flag.Deprecated) > 0 {
-			return
-		}
-		format := ""
-		// ex: w/ option string argument '-%s, --%s[=%q]: %s\n'
-		if len(flag.Shorthand) > 0 {
-			format = "  -%s, --%s"
-		} else {
-			format = "   %s   --%s"
-		}
-		if len(flag.NoOptDefVal) > 0 {
-			format = format + "["
-		}
-		if _, ok := flag.Value.(*stringValue); ok {
-			format = format + "=%q"
-		} else {
-			format = format + "=%s"
-		}
-		if len(flag.NoOptDefVal) > 0 {
-			format = format + "]"
-		}
-		format = format + ": %s\n"
-		fmt.Fprintf(f.out(), format, flag.Shorthand, flag.Name, flag.DefValue, flag.Usage)
-	})
+	usages := f.FlagUsages()
+	fmt.Fprintf(f.out(), "%s", usages)
 }
 
 func (f *FlagSet) FlagUsages() string {
