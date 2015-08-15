@@ -524,6 +524,19 @@ func (f *FlagSet) AddFlag(flag *Flag) {
 	f.shorthands[c] = flag
 }
 
+// AddFlagSet adds one FlagSet to another. If a flag is already present in f
+// the flag from newSet will be ignored
+func (f *FlagSet) AddFlagSet(newSet *FlagSet) {
+	if newSet == nil {
+		return
+	}
+	newSet.VisitAll(func(flag *Flag) {
+		if f.Lookup(flag.Name) == nil {
+			f.AddFlag(flag)
+		}
+	})
+}
+
 // Var defines a flag with the specified name and usage string. The type and
 // value of the flag are represented by the first argument, of type Value, which
 // typically holds a user-defined implementation of Value. For instance, the
