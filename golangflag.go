@@ -63,10 +63,12 @@ func (v *flagValueWrapper) Type() string {
 func PFlagFromGoFlag(goflag *goflag.Flag) *Flag {
 	// Remember the default value as a string; it won't change.
 	flag := &Flag{
-		Name:     goflag.Name,
-		Usage:    goflag.Usage,
-		Value:    wrapFlagValue(goflag.Value),
-		DefValue: goflag.DefValue,
+		Name:  goflag.Name,
+		Usage: goflag.Usage,
+		Value: wrapFlagValue(goflag.Value),
+		// Looks like golang flags don't set DefValue correctly  :-(
+		//DefValue: goflag.DefValue,
+		DefValue: goflag.Value.String(),
 	}
 	if fv, ok := goflag.Value.(goBoolFlag); ok && fv.IsBoolFlag() {
 		flag.NoOptDefVal = "true"
