@@ -110,6 +110,23 @@ func TestUsage(t *testing.T) {
 	}
 }
 
+func TestAddFlagSet(t *testing.T) {
+	oldSet := NewFlagSet("old", ContinueOnError)
+	newSet := NewFlagSet("new", ContinueOnError)
+
+	oldSet.String("flag1", "flag1", "flag1")
+	oldSet.String("flag2", "flag2", "flag2")
+
+	newSet.String("flag2", "flag2", "flag2")
+	newSet.String("flag3", "flag3", "flag3")
+
+	oldSet.AddFlagSet(newSet)
+
+	if len(oldSet.formal) != 3 {
+		t.Errorf("Unexpected result adding a FlagSet to a FlagSet %v", oldSet)
+	}
+}
+
 func TestAnnotation(t *testing.T) {
 	f := NewFlagSet("shorthand", ContinueOnError)
 
