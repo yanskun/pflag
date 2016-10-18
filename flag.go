@@ -514,7 +514,7 @@ func (f *FlagSet) FlagUsages() string {
 		if len(flag.NoOptDefVal) > 0 {
 			switch flag.Value.Type() {
 			case "string":
-				line += fmt.Sprintf("[=%q]", flag.NoOptDefVal)
+				line += fmt.Sprintf("[=\"%s\"]", flag.NoOptDefVal)
 			case "bool":
 				if flag.NoOptDefVal != "true" {
 					line += fmt.Sprintf("[=%s]", flag.NoOptDefVal)
