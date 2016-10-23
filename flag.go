@@ -635,7 +635,7 @@ func (f *FlagSet) VarPF(value Value, name, shorthand, usage string) *Flag {
 
 // VarP is like Var, but accepts a shorthand letter that can be used after a single dash.
 func (f *FlagSet) VarP(value Value, name, shorthand, usage string) {
-	_ = f.VarPF(value, name, shorthand, usage)
+	f.VarPF(value, name, shorthand, usage)
 }
 
 // AddFlag will add the flag to the FlagSet

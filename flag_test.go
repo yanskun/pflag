@@ -404,10 +404,10 @@ func TestFlagSetParse(t *testing.T) {
 
 func TestChangedHelper(t *testing.T) {
 	f := NewFlagSet("changedtest", ContinueOnError)
-	_ = f.Bool("changed", false, "changed bool")
-	_ = f.Bool("settrue", true, "true to true")
-	_ = f.Bool("setfalse", false, "false to false")
-	_ = f.Bool("unchanged", false, "unchanged bool")
+	f.Bool("changed", false, "changed bool")
+	f.Bool("settrue", true, "true to true")
+	f.Bool("setfalse", false, "false to false")
+	f.Bool("unchanged", false, "unchanged bool")
 
 	args := []string{"--changed", "--settrue", "--setfalse=false"}
 	if err := f.Parse(args); err != nil {
