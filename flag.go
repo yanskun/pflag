@@ -319,7 +319,9 @@ func (f *FlagSet) Lookup(name string) *Flag {
 	return f.lookup(f.normalizeFlagName(name))
 }
 
-// ShorthandLookup returns the Flag structure of the short handed flag, returning nil if none exists.
+// ShorthandLookup returns the Flag structure of the short handed flag,
+// returning nil if none exists.
+// It panics, if len(name) > 1.
 func (f *FlagSet) ShorthandLookup(name string) *Flag {
 	if name == "" {
 		return nil
