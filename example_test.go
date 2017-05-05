@@ -77,6 +77,15 @@ func Example() {
 }
 
 func ExampleShorthandLookup() {
+	pflag.BoolP("verbose", "v", false, "verbose output")
+
+	name := "verbose"
+	flag := pflag.ShorthandLookup(name[:1])
+
+	fmt.Println(flag.Name)
+}
+
+func ExampleFlagSet_ShorthandLookup() {
 	fs := pflag.NewFlagSet("Example", pflag.ContinueOnError)
 	fs.BoolP("verbose", "v", false, "verbose output")
 
