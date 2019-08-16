@@ -190,6 +190,12 @@ type Value interface {
 	Type() string
 }
 
+type SliceValue interface {
+	Append(string) error
+	Replace([]string) error
+	GetSlice() []string
+}
+
 // sortFlags returns the flags as a slice in lexicographical sorted order.
 func sortFlags(flags map[NormalizedName]*Flag) []*Flag {
 	list := make(sort.StringSlice, len(flags))
