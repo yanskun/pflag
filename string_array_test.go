@@ -211,7 +211,7 @@ func TestSAAsSliceValue(t *testing.T) {
 			_ = val.Replace([]string{"3ns"})
 		}
 	})
-	if len(sa) != 1 || sa[0]!= "3ns" {
+	if len(sa) != 1 || sa[0] != "3ns" {
 		t.Fatalf("Expected ss to be overwritten with '3ns', but got: %v", sa)
 	}
 }

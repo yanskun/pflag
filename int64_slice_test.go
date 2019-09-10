@@ -162,7 +162,7 @@ func TestI64SAsSliceValue(t *testing.T) {
 			_ = val.Replace([]string{"3"})
 		}
 	})
-	if len(i64s) != 1 || i64s[0]!= 3 {
+	if len(i64s) != 1 || i64s[0] != 3 {
 		t.Fatalf("Expected ss to be overwritten with '3.1', but got: %v", i64s)
 	}
 }

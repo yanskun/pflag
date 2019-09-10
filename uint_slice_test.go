@@ -158,7 +158,7 @@ func TestUISAsSliceValue(t *testing.T) {
 			_ = val.Replace([]string{"3"})
 		}
 	})
-	if len(uis) != 1 || uis[0]!= 3 {
+	if len(uis) != 1 || uis[0] != 3 {
 		t.Fatalf("Expected ss to be overwritten with '3.1', but got: %v", uis)
 	}
 }

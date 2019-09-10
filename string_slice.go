@@ -73,7 +73,7 @@ func (s *stringSliceValue) Replace(val []string) error {
 }
 
 func (s *stringSliceValue) GetSlice() []string {
-	return  *s.value
+	return *s.value
 }
 
 func stringSliceConv(sval string) (interface{}, error) {

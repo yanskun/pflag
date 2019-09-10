@@ -270,7 +270,7 @@ func TestSSAsSliceValue(t *testing.T) {
 			_ = val.Replace([]string{"three"})
 		}
 	})
-	if len(ss) != 1 || ss[0]!= "three" {
+	if len(ss) != 1 || ss[0] != "three" {
 		t.Fatalf("Expected ss to be overwritten with 'three', but got: %s", ss)
 	}
 }

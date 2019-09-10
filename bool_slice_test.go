@@ -178,7 +178,7 @@ func TestBSAsSliceValue(t *testing.T) {
 			_ = val.Replace([]string{"false"})
 		}
 	})
-	if len(bs) != 1 || bs[0]!= false {
+	if len(bs) != 1 || bs[0] != false {
 		t.Fatalf("Expected ss to be overwritten with 'false', but got: %v", bs)
 	}
 }
